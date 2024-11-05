@@ -1,3 +1,4 @@
+<!--
 ---
 page_type: sample
 languages:
@@ -11,6 +12,7 @@ urlFragment: svc-invoke-dapr-python
 name: Microservice communication using Dapr's Service Invocation API (Python)
 description: Create two microservices with Python that communicate using Dapr's Service Invocation API. The Service Invocation API enables your applications to communicate reliably and securely by leveraging auto-mTLS and built-in retries
 ---
+-->
 <!-- YAML front-matter schema: https://review.learn.microsoft.com/en-us/help/contribute/samples/process/onboarding?branch=main#supported-metadata-fields-for-readmemd -->
 
 # Microservice communication using service invoke (sync)
