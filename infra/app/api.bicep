@@ -19,7 +19,6 @@ module app '../core/host/container-app.bicep' = {
     containerCpuCoreCount: '1.0'
     containerMemory: '2.0Gi'
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
-    daprEnabled: true
     containerName: serviceName
     targetPort: 8001
     managedIdentityEnabled: managedIdentityName != ''? true: false

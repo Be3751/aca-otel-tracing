@@ -57,7 +57,6 @@ module appEnv './app/app-env.bicep' = {
     location: location
     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    daprEnabled: true
   }
 }
 
