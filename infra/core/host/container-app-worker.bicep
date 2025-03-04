@@ -31,6 +31,9 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
       activeRevisionsMode: 'single'
+      ingress: containerAppsEnvironmentName != '' ? {
+        external: false
+      } : null
       secrets: [
         {
           name: 'registry-password'
