@@ -11,10 +11,6 @@ param keyVaultName string = ''
 param managedIdentityEnabled bool = !empty(keyVaultName)
 param managedIdentityName string = ''
 
-param daprEnabled bool = false
-param daprApp string = containerName
-param daprAppProtocol string = 'http'
-
 @description('CPU cores allocated to a single container instance, e.g. 0.5')
 param containerCpuCoreCount string = '0.5'
 
@@ -35,17 +31,15 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
       activeRevisionsMode: 'single'
+      ingress: containerAppsEnvironmentName != '' ? {
+        external: false
+      } : null
       secrets: [
         {
           name: 'registry-password'
           value: containerRegistry.listCredentials().passwords[0].value
         }
       ]
-      dapr: {
-        enabled: daprEnabled
-        appId: daprApp
-        appProtocol: daprAppProtocol
-      }
       registries: [
         {
           server: '${containerRegistry.name}.azurecr.io'

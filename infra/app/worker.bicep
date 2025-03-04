@@ -17,7 +17,6 @@ module app '../core/host/container-app-worker.bicep' = {
     containerAppsEnvironmentName: containerAppsEnvironmentName
     containerRegistryName: containerRegistryName
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
-    daprEnabled: true
     containerName: serviceName
     managedIdentityEnabled: true
     managedIdentityName: managedIdentityName
