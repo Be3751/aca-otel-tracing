@@ -7,9 +7,13 @@ services:
     language: python
     host: containerapp
     module: app/worker
-  api:
+  order-processor-api:
     project: apps/order-processor
     language: python
     host: containerapp
     module: app/api
- 
+  receipt-api:
+    project: apps/receipt
+    language: python
+    host: containerapp
+    module: app/receipt-api

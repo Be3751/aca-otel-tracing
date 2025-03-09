@@ -8,22 +8,20 @@ logging.basicConfig(level=logging.INFO)
 
 # TODO: 環境変数にURLを指定する
 base_url = os.getenv('BASE_URL', 'http://ca-order-processor-c3xgys6u6lm2y')
-# Adding app id as part of the header
 headers = {'content-type': 'application/json'}
 
+cnt = 0
 while(True):
-  for i in range(1, 20):
-    print('Ordering item: ' + str(i), flush=True)
+  print('Ordering item: ' + str(cnt), flush=True)
 
-    order = {'orderId': i}
+  order = {'orderId': cnt}
 
-    result = requests.post(
-        url='%s/orders' % (base_url),
-        data=json.dumps(order),
-        headers=headers
-    )
+  result = requests.post(
+      url='%s/orders' % (base_url),
+      data=json.dumps(order),
+      headers=headers
+  )
 
-    print('Order passed: ' + json.dumps(order), flush=True)
-
-    time.sleep(1)
-  time.sleep(10)
+  print('Order passed: ' + json.dumps(order), flush=True)
+  time.sleep(60)
+  cnt += 1

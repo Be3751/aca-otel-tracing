@@ -6,12 +6,11 @@ param containerAppsEnvironmentName string = ''
 param containerName string = 'main'
 param containerRegistryName string = ''
 param env array = []
-param external bool = true
+param external bool = false
 param imageName string
 param keyVaultName string = ''
 param managedIdentityEnabled bool = !empty(keyVaultName)
 param managedIdentityName string = ''
-param targetPort int = 8001
 
 @description('CPU cores allocated to a single container instance, e.g. 0.5')
 param containerCpuCoreCount string = '0.5'
