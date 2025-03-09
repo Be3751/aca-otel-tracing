@@ -15,6 +15,7 @@ param location string
 // }
 param apiContainerAppName string = ''
 param apiServiceName string = 'order-processor'
+param receiptApiServiceName string = 'receipt'
 param applicationInsightsDashboardName string = ''
 param applicationInsightsName string = ''
 param containerAppsEnvironmentName string = ''
@@ -35,6 +36,12 @@ param apiImageName string = ''
 
 @description('The image name for the web service')
 param workerImageName string = ''
+
+@description('The name of the storage account')
+param storageAccountName string = ''
+
+@description('The name of the blob container')
+param blobContainerName string = 'orders'
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -76,7 +83,7 @@ module worker './app/worker.bicep' = {
 }
 
 // API
-module api './app/api.bicep' = {
+module api './app/order-processor-api.bicep' = {
   name: apiServiceName
   scope: rg
   params: {
@@ -87,6 +94,38 @@ module api './app/api.bicep' = {
     containerRegistryName: appEnv.outputs.registryName
     serviceName: apiServiceName
     managedIdentityName: security.outputs.managedIdentityName
+  }
+}
+
+module receiptApi './app/receipt-api.bicep' = {
+  name: receiptApiServiceName
+  scope: rg
+  params: {
+    name: !empty(apiContainerAppName) ? apiContainerAppName : '${abbrs.appContainerApps}${receiptApiServiceName}-${resourceToken}'
+    containerAppsEnvironmentName: appEnv.outputs.environmentName
+    containerRegistryName: appEnv.outputs.registryName
+    imageName: apiImageName
+    serviceName: receiptApiServiceName
+    managedIdentityName: security.outputs.managedIdentityName
+    storageAccountName: storageAccount.outputs.name
+    containerName: blobContainerName
+  }
+}
+
+// Provision Storage Account
+module storageAccount './core/storage/storage-account.bicep' = {
+  name: 'storageAccount'
+  scope: rg
+  params: {
+    name: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageStorageAccounts}${resourceToken}'
+    location: location
+    tags: tags
+    containers: [
+      {
+        name: blobContainerName
+        publicAccess: 'None'
+      }
+    ]
   }
 }
 
@@ -122,6 +161,7 @@ output AZURE_CONTAINER_REGISTRY_NAME string = appEnv.outputs.registryName
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
+output SERVICE_RECEIPT_API_NAME string = receiptApi.outputs.SERVICE_API_NAME
 output SERVICE_WORKER_NAME string = worker.outputs.SERVICE_WEB_NAME
 output USE_APIM bool = useAPIM
 output PRINCIPAL_ID string = principalId

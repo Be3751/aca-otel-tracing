@@ -13,14 +13,13 @@ module app '../core/host/container-app.bicep' = {
   params: {
     name: name
     location: location
-    tags: union(tags, { 'azd-service-name': 'api' })
+    tags: union(tags, { 'azd-service-name': '${serviceName}-api' })
     containerAppsEnvironmentName: containerAppsEnvironmentName
     containerRegistryName: containerRegistryName
     containerCpuCoreCount: '1.0'
     containerMemory: '2.0Gi'
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
     containerName: serviceName
-    targetPort: 8001
     managedIdentityEnabled: managedIdentityName != ''? true: false
     managedIdentityName: managedIdentityName
   }
@@ -30,6 +29,3 @@ output SERVICE_API_IDENTITY_PRINCIPAL_ID string = app.outputs.identityPrincipalI
 output SERVICE_API_NAME string = app.outputs.name
 output SERVICE_API_URI string = app.outputs.uri
 output SERVICE_API_IMAGE_NAME string = app.outputs.imageName
-
-
-
