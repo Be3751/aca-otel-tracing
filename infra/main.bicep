@@ -83,7 +83,7 @@ module worker './app/worker.bicep' = {
 }
 
 // API
-module api './app/api.bicep' = {
+module api './app/order-processor-api.bicep' = {
   name: apiServiceName
   scope: rg
   params: {
