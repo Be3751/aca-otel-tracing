@@ -1,2 +1,6 @@
 Flask
+python-dotenv
 requests
+azure-monitor-opentelemetry
+opentelemetry-api
+opentelemetry-sdk

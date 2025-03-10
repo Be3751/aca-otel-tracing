@@ -7,6 +7,7 @@ param containerRegistryName string
 param imageName string = ''
 param serviceName string = 'order-processor'
 param managedIdentityName string = ''
+param applicationInsightsConnectionString string
 
 module app '../core/host/container-app.bicep' = {
   name: '${serviceName}-container-app-module'
@@ -22,6 +23,16 @@ module app '../core/host/container-app.bicep' = {
     containerName: serviceName
     managedIdentityEnabled: managedIdentityName != ''? true: false
     managedIdentityName: managedIdentityName
+    env: [
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: applicationInsightsConnectionString
+      }
+      {
+        name: 'OTEL_SERVICE_NAME'
+        value: serviceName
+      }
+    ]
   }
 }
 
@@ -29,3 +40,4 @@ output SERVICE_API_IDENTITY_PRINCIPAL_ID string = app.outputs.identityPrincipalI
 output SERVICE_API_NAME string = app.outputs.name
 output SERVICE_API_URI string = app.outputs.uri
 output SERVICE_API_IMAGE_NAME string = app.outputs.imageName
+

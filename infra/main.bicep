@@ -79,6 +79,7 @@ module worker './app/worker.bicep' = {
     containerRegistryName: appEnv.outputs.registryName
     serviceName: workerServiceName
     managedIdentityName: security.outputs.managedIdentityName
+    applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
   }
 }
 
@@ -94,6 +95,7 @@ module api './app/order-processor-api.bicep' = {
     containerRegistryName: appEnv.outputs.registryName
     serviceName: apiServiceName
     managedIdentityName: security.outputs.managedIdentityName
+    applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
   }
 }
 
@@ -109,6 +111,7 @@ module receiptApi './app/receipt-api.bicep' = {
     managedIdentityName: security.outputs.managedIdentityName
     storageAccountName: storageAccount.outputs.name
     containerName: blobContainerName
+    applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
   }
 }
 

@@ -1,4 +1,7 @@
 Flask
+python-dotenv
 azure-storage-blob
 azure-identity
-python-dotenv
+azure-monitor-opentelemetry
+opentelemetry-api
+opentelemetry-sdk

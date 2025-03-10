@@ -1,8 +1,21 @@
 import json
 import os
 
-from flask import Flask, request
 import requests
+import dotenv
+from azure.monitor.opentelemetry import configure_azure_monitor
+from opentelemetry import trace
+
+dotenv.load_dotenv()
+connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+
+configure_azure_monitor(
+  connection_string=connection_string
+)
+tracer = trace.get_tracer(__name__)
+
+# Import Flask after running configure_azure_monitor()
+from flask import Flask, request
 
 app = Flask(__name__)
 
@@ -14,18 +27,20 @@ def getOrder():
     order = request.json
     print('Order received : ' + json.dumps(order), flush=True)
     
-    # traceparent = request.headers.get('traceparent')
+    traceparent = request.headers.get('traceparent')
     headers = {
         'content-type': content_type,
-        # 'traceparent': traceparent
+        'traceparent': traceparent
     }
 
     # Invoking a service
-    result = requests.post(
-        url='%s/orders' % (base_url),
-        data=json.dumps(order),
-        headers=headers
-    )
+    with tracer.start_as_current_span('order') as span:
+        result = requests.post(
+            url='%s/orders' % (base_url),
+            data=json.dumps(order),
+            headers=headers
+        )
+        span.set_attribute("order.id", order.get("id", "unknown"))
 
     print(f"Request was sent to receipt: result = {result}", flush=True)
 
