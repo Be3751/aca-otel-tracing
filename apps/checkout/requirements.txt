@@ -1,1 +1,5 @@
 requests
+python-dotenv
+azure-monitor-opentelemetry
+opentelemetry-api
+opentelemetry-sdk

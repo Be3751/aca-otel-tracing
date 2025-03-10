@@ -9,6 +9,7 @@ param serviceName string = 'receipt'
 param managedIdentityName string = ''
 param storageAccountName string
 param containerName string
+param applicationInsightsConnectionString string
 
 module app '../core/host/container-app.bicep' = {
   name: '${serviceName}-container-app-module'
@@ -33,6 +34,14 @@ module app '../core/host/container-app.bicep' = {
       {
         name: 'STORAGE_ACCOUNT_CONTAINER_NAME'
         value: containerName
+      }
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: applicationInsightsConnectionString
+      }
+      {
+        name: 'OTEL_SERVICE_NAME'
+        value: serviceName
       }
     ]
   }

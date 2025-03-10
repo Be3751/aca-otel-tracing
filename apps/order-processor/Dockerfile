@@ -3,6 +3,9 @@ FROM python:3.11-alpine
 # upgrade pip
 RUN pip install --upgrade pip
 
+# install gcc, python3-dev, musl-dev, and linux-headers for uwsgi
+RUN apk add gcc python3-dev musl-dev linux-headers
+
 # get curl for healthchecks
 RUN apk add curl
 

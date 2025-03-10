@@ -7,6 +7,7 @@ param containerRegistryName string
 param imageName string = ''
 param serviceName string = 'checkout'
 param managedIdentityName string = ''
+param applicationInsightsConnectionString string
 
 module app '../core/host/container-app-worker.bicep' = {
   name: '${serviceName}-container-app-module'
@@ -20,6 +21,16 @@ module app '../core/host/container-app-worker.bicep' = {
     containerName: serviceName
     managedIdentityEnabled: true
     managedIdentityName: managedIdentityName
+    env: [
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: applicationInsightsConnectionString
+      }
+      {
+        name: 'OTEL_SERVICE_NAME'
+        value: serviceName
+      }
+    ]
   }
 }
 
