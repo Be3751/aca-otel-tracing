@@ -43,6 +43,10 @@ module app '../core/host/container-app.bicep' = {
         name: 'OTEL_SERVICE_NAME'
         value: serviceName
       }
+      {
+        name: 'OTLP_EXPORT_ENDPOINT'
+        value: 'http://tempo.monitoring.svc.cluster.local:3100'
+      }
     ]
   }
 }
