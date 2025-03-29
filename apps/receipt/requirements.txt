@@ -5,3 +5,4 @@ azure-identity
 azure-monitor-opentelemetry
 opentelemetry-api
 opentelemetry-sdk
+opentelemetry-exporter-otlp

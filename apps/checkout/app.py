@@ -7,14 +7,22 @@ import os
 import dotenv
 from azure.monitor.opentelemetry import configure_azure_monitor
 from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 dotenv.load_dotenv()
 connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+otlp_export_endpoint = os.getenv("OTLP_EXPORT_ENDPOINT")
 
 configure_azure_monitor(
   connection_string=connection_string
 )
 tracer = trace.get_tracer(__name__)
+
+otlp_exporter = OTLPSpanExporter(endpoint=otlp_export_endpoint)
+span_processor = BatchSpanProcessor(otlp_exporter)
+provider = trace.get_tracer_provider().add_span_processor(span_processor)
+
 traceparent_version = "00"
 traceparent_trace_flags = "01"
 

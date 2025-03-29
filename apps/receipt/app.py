@@ -9,12 +9,15 @@ from azure.storage.blob import BlobServiceClient
 from azure.monitor.opentelemetry import configure_azure_monitor
 from opentelemetry import trace
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 print("Loading .env file", flush=True)
 dotenv.load_dotenv()
-
 account_name = os.getenv("STORAGE_ACCOUNT_NAME")
 container_name = os.getenv("STORAGE_ACCOUNT_CONTAINER_NAME")
+otlp_export_endpoint = os.getenv("OTLP_EXPORT_ENDPOINT")
+
 credential = DefaultAzureCredential()
 account_url = f"https://{account_name}.blob.core.windows.net"
 
@@ -23,6 +26,10 @@ configure_azure_monitor(
   connection_string=connection_string
 )
 tracer = trace.get_tracer(__name__)
+
+otlp_exporter = OTLPSpanExporter(endpoint=otlp_export_endpoint)
+span_processor = BatchSpanProcessor(otlp_exporter)
+provider = trace.get_tracer_provider().add_span_processor(span_processor)
 
 # Import Flask after running configure_azure_monitor()
 from flask import Flask, request
