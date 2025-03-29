@@ -17,11 +17,11 @@ description: Create microservices with Python that communicate reliably and secu
 
 # Microservice Communication with OpenTelemetry Tracing
 
-This repository demonstrates how to build microservices that communicate reliably and securely. It also showcases how to instrument these services with OpenTelemetry and Azure Monitor Distro (AzMon Distro) for distributed tracing and observability.
+This repository demonstrates how to build microservices that communicate and showcases how to instrument these services with OpenTelemetry and Azure Monitor Distro (AzMon Distro) for distributed tracing and observability.
 
 ## Inspiration
 
-This repository is inspired by the [Azure Samples repository](https://github.com/Azure-Samples/svc-invoke-dapr-python), which demonstrates microservice communication using Dapr. However, this implementation focuses on using OpenTelemetry to trace service-to-service communication between the following services:
+This repository is inspired by the [Azure-Samples/svc-invoke-dapr-python](https://github.com/Azure-Samples/svc-invoke-dapr-python), which demonstrates microservice communication using Dapr. However, this implementation focuses on using OpenTelemetry to trace service-to-service communication between the following services:
 - **Checkout Service**: Initiates the order process.
 - **Order Service**: Processes the order.
 - **Receipt Service**: Generates a receipt for the order.
@@ -30,48 +30,17 @@ This repository is inspired by the [Azure Samples repository](https://github.com
 ---
 
 ## Features
-- Reliable and secure microservice communication.
+- Microservice communication.
 - Deployment to Azure Container Apps (ACA) using Azure Developer CLI (azd).
 - Distributed tracing and monitoring with Azure Application Insights and AzMon Distro.
 - Tracing service-to-service communication, including interactions with Azure Storage Account.
 
 ---
 
-## Run Locally
-
-### Prerequisites
+## Prerequisites
 - Install [Python 3.8+](https://www.python.org/downloads/).
 - Install [Azure Developer CLI (azd)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd).
-
-### Steps
-1. Clone this repository:
-   ```bash
-   git clone <repository-url>
-   cd aca-otel-tracing
-   ```
-
-2. Follow the instructions below to run the services locally:
-   - **Checkout Service**:  
-     ```bash
-     cd checkout
-     pip3 install -r requirements.txt 
-     python3 app.py
-     ```
-   - **Order Service**:  
-     ```bash
-     cd order
-     pip3 install -r requirements.txt 
-     python3 app.py
-     ```
-   - **Receipt Service**:  
-     ```bash
-     cd receipt
-     pip3 install -r requirements.txt 
-     python3 app.py
-     ```
-
-3. Expected output:
-In the terminal logs, you'll see traces of service-to-service communication, including interactions with the Azure Storage Account.
+- Install [Docker](https://www.docker.com/) and ensure it is running.
 
 ---
 
@@ -84,7 +53,7 @@ In the terminal logs, you'll see traces of service-to-service communication, inc
 ### Steps
 1. Initialize the project:
    ```bash
-   azd init --template https://github.com/Azure-Samples/svc-invoke-python
+   azd init
    ```
 
    Provide the following information when prompted:
