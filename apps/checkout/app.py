@@ -20,10 +20,6 @@ traceparent_trace_flags = "01"
 
 logging.basicConfig(level=logging.INFO)
 
-# TODO: 環境変数にURLを指定する
-base_url = os.getenv('BASE_URL', 'http://ca-order-processor-c3xgys6u6lm2y')
-content_type = "application/json"
-
 cnt = 0
 while(True):
   print('Ordering item: ' + str(cnt), flush=True)
@@ -41,11 +37,11 @@ while(True):
     traceparent = f"{traceparent_version}-{trace_id_hex_value}-{span_id_hex_value}-{traceparent_trace_flags}"
 
     headers = {
-      'content-type': content_type,
+      'content-type': 'application/json',
       'traceparent': traceparent
     }
     result = requests.post(
-        url='%s/orders' % (base_url),
+        url='http://%s/orders' % (os.getenv('SERVICE_ORDER_PROCESSOR_API_NAME')),
         data=json.dumps(order),
         headers=headers
     )

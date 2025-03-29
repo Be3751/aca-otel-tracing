@@ -23,10 +23,10 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
   location: location
   tags: tags
   identity: managedIdentityEnabled ? {
-    type: 'SystemAssigned,UserAssigned'
-    userAssignedIdentities: {
+    type: managedIdentityName != '' ? 'UserAssigned' : 'SystemAssigned'
+    userAssignedIdentities: managedIdentityName != '' ? {
       '${managedIdentity.id}' : {}
-    }
+    } : null
   } : { type: 'None' }
   dependsOn: [managedIdentity]
   properties: {
@@ -80,7 +80,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-02-01-pr
 }
 
 // user assigned managed identity to use throughout
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = if (!empty(managedIdentityName)) {
   name: managedIdentityName
 }
 

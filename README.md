@@ -8,103 +8,138 @@ languages:
 products:
 - azure
 - azure-container-apps
-urlFragment: svc-invoke-dapr-python
-name: Microservice communication using Dapr's Service Invocation API (Python)
-description: Create two microservices with Python that communicate using Dapr's Service Invocation API. The Service Invocation API enables your applications to communicate reliably and securely by leveraging auto-mTLS and built-in retries
+urlFragment: svc-invoke-python
+name: Microservice communication using Python with OpenTelemetry Tracing
+description: Create microservices with Python that communicate reliably and securely. Instrument the services with OpenTelemetry and Azure Monitor Distro for distributed tracing and observability.
 ---
 -->
 <!-- YAML front-matter schema: https://review.learn.microsoft.com/en-us/help/contribute/samples/process/onboarding?branch=main#supported-metadata-fields-for-readmemd -->
 
-# Microservice communication using service invoke (sync)
+# Microservice Communication with OpenTelemetry Tracing
 
-In this quickstart, you'll create two microservices that communicate using Dapr's Service Invocation API. The Service Invocation API enables your applications to communicate reliably and securely by leveraging auto-mTLS and built-in retries.
+This repository demonstrates how to build microservices that communicate reliably and securely. It also showcases how to instrument these services with OpenTelemetry and Azure Monitor Distro (AzMon Distro) for distributed tracing and observability.
 
-![](images/service-invocation-quickstart.png)
+## Inspiration
 
-Visit [this](https://docs.dapr.io/developing-applications/building-blocks/service-invocation/) link for more information about Dapr and Service Invocation.
+This repository is inspired by the [Azure Samples repository](https://github.com/Azure-Samples/svc-invoke-dapr-python), which demonstrates microservice communication using Dapr. However, this implementation focuses on using OpenTelemetry to trace service-to-service communication between the following services:
+- **Checkout Service**: Initiates the order process.
+- **Order Service**: Processes the order.
+- **Receipt Service**: Generates a receipt for the order.
+- **Azure Storage Account**: Stores the receipt data.
 
-# Run and develop locally
+---
 
-### Run the order-processor service (callee) with Dapr
+## Features
+- Reliable and secure microservice communication.
+- Deployment to Azure Container Apps (ACA) using Azure Developer CLI (azd).
+- Distributed tracing and monitoring with Azure Application Insights and AzMon Distro.
+- Tracing service-to-service communication, including interactions with Azure Storage Account.
 
-2. Open a new terminal window, change directories to `./order-processor` and run: 
+---
 
-```bash
-cd order-processor
-pip3 install -r requirements.txt 
-```
+## Run Locally
 
-3. Run the order-processor service (callee) with Dapr: 
+### Prerequisites
+- Install [Python 3.8+](https://www.python.org/downloads/).
+- Install [Azure Developer CLI (azd)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd).
 
-```bash
-dapr run --app-port 8001 --app-id order-processor --app-protocol http --dapr-http-port 3501 -- python3 app.py
-```
+### Steps
+1. Clone this repository:
+   ```bash
+   git clone <repository-url>
+   cd aca-otel-tracing
+   ```
 
-### Run the checkout service (caller) with Dapr
+2. Follow the instructions below to run the services locally:
+   - **Checkout Service**:  
+     ```bash
+     cd checkout
+     pip3 install -r requirements.txt 
+     python3 app.py
+     ```
+   - **Order Service**:  
+     ```bash
+     cd order
+     pip3 install -r requirements.txt 
+     python3 app.py
+     ```
+   - **Receipt Service**:  
+     ```bash
+     cd receipt
+     pip3 install -r requirements.txt 
+     python3 app.py
+     ```
 
-2. Open a new terminal window, change directories to `./checkout` and run: 
+3. Expected output:
+In the terminal logs, you'll see traces of service-to-service communication, including interactions with the Azure Storage Account.
 
-```bash
-cd checkout
-pip3 install -r requirements.txt 
-```
+---
 
-3. Run the checkout service (callee) with Dapr: 
+## Deploy to Azure and Verify Tracing
 
-```bash
-dapr run  --app-id checkout --app-protocol http --dapr-http-port 3500 -- python3 app.py
-```
+### Prerequisites
+- Ensure you have Azure CLI installed and authenticated.
+- Install Azure Developer CLI (azd) version 0.9.0-beta.3 or greater.
 
-4. Expected output:
-In both terminals, you'll see orders passed and orders received. Service invocation requests are made from the checkout service to the order-processor service: 
+### Steps
+1. Initialize the project:
+   ```bash
+   azd init --template https://github.com/Azure-Samples/svc-invoke-python
+   ```
 
-Output from the checkout service:
-```bash
-== APP == Order passed: {"orderId":1}
-== APP == Order passed: {"orderId":2}
-== APP == Order passed: {"orderId":3}
-== APP == Order passed: {"orderId":4}
-```
+   Provide the following information when prompted:
+   - `Environment Name`: Unique name for your Azure resources.
+   - `Azure Location`: Region where resources will be deployed.
+   - `Azure Subscription`: Subscription to use for deployment.
 
-Output from the order-processor service:
-```bash
-== APP == Order received: { orderId: 1 }
-== APP == Order received: { orderId: 2 }
-== APP == Order received: { orderId: 3 }
-== APP == Order received: { orderId: 4 }
-```
+2. Deploy the application:
+   ```bash
+   azd up
+   ```
 
-# Deploy to Azure (Azure Container Apps)
-Deploy to Azure for dev-test
+   This command will:
+   - Package the application (`azd package`).
+   - Provision Azure resources (`azd provision`).
+   - Deploy the application code (`azd deploy`).
 
-NOTE: make sure you have Azure Dev CLI pre-reqs [here](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-windows) and are on version 0.9.0-beta.3 or greater.
+3. Verify the deployment:
+   - Navigate to the Azure Portal and locate the Container Apps for all services.
+   - Check the `Log stream` for each app to confirm successful communication.
 
-1. Run the following command to initialize the project. 
+4. View distributed traces:
+   - Open the Azure Application Insights resource in the Azure Portal.
+   - Use the "Transaction Search" or "Live Metrics" features to view traces of service invocation and Azure Storage interactions.
 
-```bash
-azd init --template https://github.com/Azure-Samples/svc-invoke-dapr-python
-``` 
+---
 
-This command will clone the code to your current folder and prompt you for the following information:
+## Instrumentation with AzMon Distro
 
-- `Environment Name`: This will be used as a prefix for the resource group that will be created to hold all Azure resources. This name should be unique within your Azure subscription.
+### Overview
+The Azure Monitor OpenTelemetry Distro (AzMon Distro) simplifies the process of instrumenting your applications for distributed tracing and metrics collection. It integrates seamlessly with Azure Application Insights.
 
-2. Run the following command to package a deployable copy of your application, provision the template's infrastructure to Azure and also deploy the application code to those newly provisioned resources.
+### Steps to Enable AzMon Distro
+1. Install the AzMon Distro package:
+   ```bash
+   pip install azure-monitor-opentelemetry
+   ```
 
-```bash
-azd up
-```
+2. Update your application code to initialize the AzMon Distro SDK:
+   ```python
+   from azure.monitor.opentelemetry import configure_azure_monitor
 
-This command will prompt you for the following information:
-- `Azure Location`: The Azure location where your resources will be deployed.
-- `Azure Subscription`: The Azure Subscription where your resources will be deployed.
+   configure_azure_monitor(connection_string="InstrumentationKey=<your-instrumentation-key>")
+   ```
 
-> NOTE: This may take a while to complete as it executes three commands: `azd package` (packages a deployable copy of your application),`azd provision` (provisions Azure resources), and `azd deploy` (deploys application code). You will see a progress indicator as it packages, provisions and deploys your application.
+3. Redeploy the services locally or to Azure to start collecting traces and metrics.
 
-3. Confirm the deployment is susccessful:
+### Benefits
+- Automatic instrumentation for HTTP, database, and messaging libraries.
+- Seamless integration with Azure Monitor for end-to-end observability.
 
-Navigate to the Container App resources for both the Checkout and Order-Processor services. Locate the `Log stream` and confirm the app container is logging each request successfully. 
+---
 
-![](images/log_stream_checkout.png)
-![](images/log_stream_orders.png)
+## Resources
+- [Azure Samples Repository](https://github.com/Azure-Samples/svc-invoke-dapr-python)
+- [Azure Monitor OpenTelemetry Distro](https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-overview)
+- [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/)
 

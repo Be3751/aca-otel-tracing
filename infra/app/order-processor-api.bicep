@@ -8,6 +8,7 @@ param imageName string = ''
 param serviceName string = 'order-processor'
 param managedIdentityName string = ''
 param applicationInsightsConnectionString string
+param receiptApiName string
 
 module app '../core/host/container-app.bicep' = {
   name: '${serviceName}-container-app-module'
@@ -35,6 +36,10 @@ module app '../core/host/container-app.bicep' = {
       {
         name: 'OTLP_EXPORT_ENDPOINT'
         value: 'http://tempo.monitoring.svc.cluster.local:3100'
+      }
+      {
+        name: 'SERVICE_RECEIPT_API_NAME'
+        value: receiptApiName
       }
     ]
   }

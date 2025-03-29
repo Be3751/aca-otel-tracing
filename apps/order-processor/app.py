@@ -19,9 +19,6 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-base_url = os.getenv('BASE_URL', 'http://ca-receipt-c3xgys6u6lm2y')
-content_type = "application/json"
-
 @app.route('/orders', methods=['POST'])
 def getOrder():
     order = request.json
@@ -29,14 +26,14 @@ def getOrder():
     
     traceparent = request.headers.get('traceparent')
     headers = {
-        'content-type': content_type,
+        'content-type': 'application/json',
         'traceparent': traceparent
     }
 
     # Invoking a service
     with tracer.start_as_current_span('order') as span:
         result = requests.post(
-            url='%s/orders' % (base_url),
+            url='http://%s/orders' % (os.getenv('SERVICE_RECEIPT_API_NAME')),
             data=json.dumps(order),
             headers=headers
         )

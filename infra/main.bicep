@@ -9,10 +9,6 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
-// Optional parameters to override the default azd resource naming conventions. Update the main.parameters.json file to provide values. e.g.,:
-// "resourceGroupName": {
-//      "value": "myGroupName"
-// }
 param apiContainerAppName string = ''
 param apiServiceName string = 'order-processor'
 param receiptApiServiceName string = 'receipt'
@@ -67,8 +63,7 @@ module appEnv './app/app-env.bicep' = {
   }
 }
 
-// Worker
-module worker './app/worker.bicep' = {
+module checkoutWorker './app/checkout-worker.bicep' = {
   name: workerServiceName
   scope: rg
   params: {
@@ -79,11 +74,11 @@ module worker './app/worker.bicep' = {
     containerRegistryName: appEnv.outputs.registryName
     serviceName: workerServiceName
     applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
+    orderProcessorApiName: orderProcessorApi.outputs.SERVICE_API_NAME
   }
 }
 
-// API
-module api './app/order-processor-api.bicep' = {
+module orderProcessorApi './app/order-processor-api.bicep' = {
   name: apiServiceName
   scope: rg
   params: {
@@ -94,6 +89,7 @@ module api './app/order-processor-api.bicep' = {
     containerRegistryName: appEnv.outputs.registryName
     serviceName: apiServiceName
     applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
+    receiptApiName: receiptApi.outputs.SERVICE_API_NAME
   }
 }
 
@@ -150,8 +146,8 @@ output AZURE_CONTAINER_REGISTRY_ENDPOINT string = appEnv.outputs.registryLoginSe
 output AZURE_CONTAINER_REGISTRY_NAME string = appEnv.outputs.registryName
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
-output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
+output SERVICE_CHECKOUT_WORKER_NAME string = checkoutWorker.outputs.SERVICE_WEB_NAME
+output SERVICE_ORDER_PROCESSOR_API_NAME string = orderProcessorApi.outputs.SERVICE_API_NAME
 output SERVICE_RECEIPT_API_NAME string = receiptApi.outputs.SERVICE_API_NAME
-output SERVICE_WORKER_NAME string = worker.outputs.SERVICE_WEB_NAME
 output USE_APIM bool = useAPIM
 output PRINCIPAL_ID string = principalId

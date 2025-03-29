@@ -24,7 +24,7 @@ module app '../core/host/container-app.bicep' = {
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
     containerName: serviceName
     external: false
-    managedIdentityEnabled: managedIdentityName != ''? true: false
+    managedIdentityEnabled: true
     managedIdentityName: managedIdentityName
     env: [
       {

@@ -8,18 +8,19 @@ param imageName string = ''
 param serviceName string = 'checkout'
 param managedIdentityName string = ''
 param applicationInsightsConnectionString string
+param orderProcessorApiName string
 
 module app '../core/host/container-app-worker.bicep' = {
   name: '${serviceName}-container-app-module'
   params: {
     name: name
     location: location
-    tags: union(tags, { 'azd-service-name': 'worker' })
+    tags: union(tags, { 'azd-service-name': '${serviceName}-worker' })
     containerAppsEnvironmentName: containerAppsEnvironmentName
     containerRegistryName: containerRegistryName
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
     containerName: serviceName
-    managedIdentityEnabled: true
+    managedIdentityEnabled: managedIdentityName != ''? true: false
     managedIdentityName: managedIdentityName
     env: [
       {
@@ -33,6 +34,10 @@ module app '../core/host/container-app-worker.bicep' = {
       {
         name: 'OTLP_EXPORT_ENDPOINT'
         value: 'http://tempo.monitoring.svc.cluster.local:3100'
+      }
+      {
+        name: 'SERVICE_ORDER_PROCESSOR_API_NAME'
+        value: orderProcessorApiName
       }
     ]
   }
