@@ -1,10 +1,9 @@
 import json
 import time
-import logging
-import requests
 import os
 
 import dotenv
+import requests
 from azure.monitor.opentelemetry import configure_azure_monitor
 from opentelemetry import trace
 
@@ -17,8 +16,6 @@ configure_azure_monitor(
 tracer = trace.get_tracer(__name__)
 traceparent_version = "00"
 traceparent_trace_flags = "01"
-
-logging.basicConfig(level=logging.INFO)
 
 cnt = 0
 while(True):

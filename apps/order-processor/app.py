@@ -1,8 +1,8 @@
 import json
 import os
 
-import requests
 import dotenv
+import requests
 from azure.monitor.opentelemetry import configure_azure_monitor
 from opentelemetry import trace
 
