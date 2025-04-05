@@ -1,4 +1,4 @@
-name: service-invoke-dapr-node-aca
+name: aca-otel-tracing
 services:
   checkout-worker:
     project: apps/checkout
