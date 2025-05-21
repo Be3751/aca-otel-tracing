@@ -7,7 +7,10 @@ from azure.monitor.opentelemetry import configure_azure_monitor
 # Telemetry exported by Azure SDK will be automatically captured
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
-from opentelemetry.sdk.trace import SpanProcessor
+from opentelemetry.sdk.trace import SpanProcessor, TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry import trace
 from opentelemetry.trace import get_tracer, SpanContext, SpanKind, TraceFlags
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
@@ -18,8 +21,8 @@ account_name = os.getenv("STORAGE_ACCOUNT_NAME")
 container_name = os.getenv("STORAGE_ACCOUNT_CONTAINER_NAME")
 account_url = f"https://{account_name}.blob.core.windows.net"
 connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+otlp_endpoint = os.getenv("OTLP_EXPORT_ENDPOINT")
 
-# Configure Azure monitor collection telemetry pipeline
 # Define a custom processor to filter your spans
 class SpanFilteringProcessor(SpanProcessor):
   # Prevents exporting spans that are of kind INTERNAL
@@ -34,6 +37,17 @@ class SpanFilteringProcessor(SpanProcessor):
               TraceFlags(TraceFlags.DEFAULT),
               span.context.trace_state,
           )
+
+# Set up OTLP exporter if endpoint is provided
+if otlp_endpoint:
+    provider = TracerProvider()
+    otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint)
+    provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+    # Also add the custom span filtering processor
+    provider.add_span_processor(SpanFilteringProcessor())
+    trace.set_tracer_provider(provider)
+
+# Configure Azure Monitor telemetry exporter
 configure_azure_monitor(
   connection_string=connection_string
 )

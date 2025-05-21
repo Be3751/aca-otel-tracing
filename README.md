@@ -34,6 +34,7 @@ This repository is inspired by the [Azure-Samples/svc-invoke-dapr-python](https:
 - Deployment to Azure Container Apps (ACA) using Azure Developer CLI (azd).
 - Distributed tracing and monitoring with Azure Application Insights and AzMon Distro.
 - Tracing service-to-service communication, including interactions with Azure Storage Account.
+- Dual telemetry export to both Azure Monitor and OTLP-compatible endpoints.
 
 ---
 
@@ -104,6 +105,53 @@ The Azure Monitor OpenTelemetry Distro (AzMon Distro) simplifies the process of 
 ### Benefits
 - Automatic instrumentation for HTTP, database, and messaging libraries.
 - Seamless integration with Azure Monitor for end-to-end observability.
+
+---
+
+## Dual Telemetry Export Configuration
+
+This application supports exporting telemetry data to both Azure Monitor and an OTLP-compatible endpoint simultaneously. This allows you to use Azure Application Insights for monitoring while also sending the same telemetry data to another observability platform that supports the OpenTelemetry Protocol (OTLP).
+
+### Prerequisites
+- Install the OTLP exporter package:
+  ```bash
+  pip install opentelemetry-exporter-otlp-proto-grpc
+  ```
+
+### Configuration
+1. Set up the environment variables:
+   - `APPLICATIONINSIGHTS_CONNECTION_STRING`: For Azure Monitor 
+   - `OTLP_EXPORT_ENDPOINT`: The endpoint URL for your OTLP-compatible backend (e.g., "http://tempo.monitoring.svc.cluster.local:3100")
+
+2. Update your application code to initialize both exporters:
+   ```python
+   import os
+   from azure.monitor.opentelemetry import configure_azure_monitor
+   from opentelemetry import trace
+   from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+   from opentelemetry.sdk.trace import TracerProvider
+   from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+   # Set up OTLP exporter if endpoint is provided
+   otlp_endpoint = os.getenv("OTLP_EXPORT_ENDPOINT")
+   if otlp_endpoint:
+       provider = TracerProvider()
+       otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint)
+       provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+       trace.set_tracer_provider(provider)
+
+   # Configure Azure Monitor telemetry exporter
+   configure_azure_monitor(
+     connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+   )
+   ```
+
+3. Deploy your application to start sending telemetry to both destinations.
+
+### Benefits
+- Monitor your application in Azure Application Insights
+- Send the same telemetry data to other observability platforms
+- Support hybrid monitoring scenarios or migration between monitoring solutions
 
 ---
 
