@@ -5,10 +5,22 @@ import dotenv
 import requests
 from azure.monitor.opentelemetry import configure_azure_monitor
 from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 dotenv.load_dotenv()
 connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+otlp_endpoint = os.getenv("OTLP_EXPORT_ENDPOINT")
 
+# Set up OTLP exporter if endpoint is provided
+if otlp_endpoint:
+    provider = TracerProvider()
+    otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint)
+    provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+    trace.set_tracer_provider(provider)
+
+# Configure Azure Monitor telemetry exporter
 configure_azure_monitor(
   connection_string=connection_string
 )
