@@ -17,22 +17,21 @@ RUN chown -R nonroot:nonroot /var/log/flask-app
 WORKDIR /home/app
 USER nonroot
 
-# copy all the files to the container
-COPY --chown=nonroot:nonroot ./apps/receipt .
-
-# copy common module
-COPY --chown=nonroot:nonroot ./apps/common ./common
-
 # venv
 ENV VIRTUAL_ENV=/home/app/venv
 
-# python setup
+# python setup (install dependencies first for better caching)
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN export FLASK_APP=app.py
+
+# Copy requirements first for better Docker layer caching
+COPY --chown=nonroot:nonroot requirements.txt .
 RUN pip install -r requirements.txt
 
-# define the port number the container should expose
-EXPOSE 8002
+# Copy the rest of the files
+COPY --chown=nonroot:nonroot . .
 
-CMD ["python", "app.py"]
+RUN export FLASK_APP=app.py
+
+# Use Flask development server with auto-reload
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8002", "--debug"]

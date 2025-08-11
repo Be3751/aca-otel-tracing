@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  checkout:
+    build:
+      context: .
+      dockerfile: ./apps/checkout/Dockerfile
+    volumes:
+      # Bind mount for live code updates
+      - ./apps/checkout:/home/app
+      - ./apps/common:/home/app/common  # Mount common module
+      - /home/app/venv  # Preserve virtual environment
+    environment:
+      - OTEL_SERVICE_NAME=checkout
+      - SERVICE_ORDER_PROCESSOR_API_NAME=order-processor:8001
+      # Add your Application Insights connection string here for tracing
+      # - APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
+    depends_on:
+      - order-processor
+    networks:
+      - otel-network
+
+  order-processor:
+    build:
+      context: .
+      dockerfile: ./apps/order-processor/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      # Bind mount for live code updates
+      - ./apps/order-processor:/home/app
+      - ./apps/common:/home/app/common  # Mount common module
+      - /home/app/venv  # Preserve virtual environment
+    environment:
+      - OTEL_SERVICE_NAME=order-processor
+      - SERVICE_RECEIPT_API_NAME=receipt:8002
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      # Add your Application Insights connection string here for tracing
+      # - APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
+    depends_on:
+      - receipt
+    networks:
+      - otel-network
+
+  receipt:
+    build:
+      context: .
+      dockerfile: ./apps/receipt/Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      # Bind mount for live code updates
+      - ./apps/receipt:/home/app
+      - ./apps/common:/home/app/common  # Mount common module
+      - /home/app/venv  # Preserve virtual environment
+    environment:
+      - OTEL_SERVICE_NAME=receipt
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      # Skip blob upload in local development
+      - SKIP_BLOB_UPLOAD=true
+      # Add your Application Insights connection string here for tracing
+      # - APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
+      # Add Azure Storage account details for blob storage
+      # - STORAGE_ACCOUNT_NAME=your_storage_account
+      # - STORAGE_ACCOUNT_CONTAINER_NAME=your_container
+    networks:
+      - otel-network
+
+networks:
+  otel-network:
+    driver: bridge

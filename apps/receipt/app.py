@@ -1,21 +1,29 @@
 import os
 import json
 import time
+import sys
 
-import dotenv
-from azure.monitor.opentelemetry import configure_azure_monitor
 # Telemetry exported by Azure SDK will be automatically captured
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 from opentelemetry.sdk.trace import SpanProcessor
 from opentelemetry.trace import get_tracer, SpanContext, SpanKind, TraceFlags
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+from opentelemetry import context as otel_context
+from opentelemetry.propagate import extract
 
-print("Loading .env file", flush=True)
-dotenv.load_dotenv()
+# Configure Azure Monitor
+sys.path.append(os.path.join(os.path.dirname(__file__), 'common'))
+from azure_monitor_config import configure_azure_monitor_telemetry
+from otel_helper import OTelHelper
 
-account_name = os.getenv("STORAGE_ACCOUNT_NAME")
-container_name = os.getenv("STORAGE_ACCOUNT_CONTAINER_NAME")
+configure_azure_monitor_telemetry()
+
+# Initialize OpenTelemetry helper
+otel_helper = OTelHelper()
+
+account_name = os.getenv("STORAGE_ACCOUNT_NAME", "local-storage")
+container_name = os.getenv("STORAGE_ACCOUNT_CONTAINER_NAME", "local-container")
 account_url = f"https://{account_name}.blob.core.windows.net"
 connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
 
@@ -34,9 +42,7 @@ class SpanFilteringProcessor(SpanProcessor):
               TraceFlags(TraceFlags.DEFAULT),
               span.context.trace_state,
           )
-configure_azure_monitor(
-  connection_string=connection_string
-)
+
 tracer = get_tracer(__name__)
 
 # Import Flask after running configure_azure_monitor()
@@ -53,37 +59,36 @@ def getOrder():
     ut = time.time()
     filename = f"order-{ut}.json"
 
-    blob_service_client = BlobServiceClient(account_url, credential=credential)
-    container_client = blob_service_client.get_container_client(container=container_name)
+    # Initialize blob storage clients only if not skipping blob upload
+    skip_blob_upload = os.getenv('SKIP_BLOB_UPLOAD', 'false').lower() == 'true'
+    
+    if not skip_blob_upload:
+        blob_service_client = BlobServiceClient(account_url, credential=credential)
+        container_client = blob_service_client.get_container_client(container=container_name)
+        blob_client = container_client.get_blob_client(filename)
+    else:
+        blob_client = None
 
-    blob_client = container_client.get_blob_client(filename)
+    # Define callback function for blob upload processing
+    def process_blob_upload(order_data):
+        # Check if we should skip blob upload in local environment
+        if skip_blob_upload:
+            print(f"[LOCAL MODE] Skipping blob upload for: {filename}", flush=True)
+            print(f"[LOCAL MODE] Would have uploaded order: {json.dumps(order_data)}", flush=True)
+        else:
+            blob_client.upload_blob(data=json.dumps(order_data), overwrite=True)
+            print(f"Order uploaded to blob storage: {filename}", flush=True)
+        
+        return True
 
-    traceparent = request.headers.get('traceparent')
-    carrier = {
-      'traceparent': traceparent
-    }
-    ctx = TraceContextTextMapPropagator().extract(carrier=carrier)
-    with tracer.start_as_current_span('order', context=ctx) as span:
-      blob_client.upload_blob(data=json.dumps(order), overwrite=True) # Call will be traced
+    otel_helper.execute_with_span(
+        callback=process_blob_upload,
+        span_attributes={'order.id': order.get('orderId', 'unknown'), 'blob.filename': filename},
+        order_data=order,
+    )
 
     return json.dumps({'success': True}), 200, {
         'Content-Type': 'application/json'}
 
-# Requests sent to the flask application will be automatically captured
-@app.route("/")
-def test():
-    return "Test flask request"
-
-# Exceptions that are raised within the request are automatically captured
-@app.route("/exception")
-def exception():
-    raise Exception("Hit an exception")
-
-# Requests sent to this endpoint will not be tracked due to
-# flask_config configuration
-@app.route("/ignore")
-def ignore():
-    return "Request received but not tracked."
-
 print("Starting receipt service", flush=True)
-app.run(port=8001, host="0.0.0.0")
+app.run(port=8002, host="0.0.0.0")
