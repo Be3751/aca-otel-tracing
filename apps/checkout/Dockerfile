@@ -18,7 +18,10 @@ WORKDIR /home/app
 USER nonroot
 
 # copy all the files to the container
-COPY --chown=nonroot:nonroot . .
+COPY --chown=nonroot:nonroot ./apps/checkout .
+
+# copy common module
+COPY --chown=nonroot:nonroot ./apps/common ./common
 
 # venv
 ENV VIRTUAL_ENV=/home/app/venv

@@ -1,17 +1,20 @@
 import json
 import os
-
-import dotenv
+import sys
 import requests
-from azure.monitor.opentelemetry import configure_azure_monitor
 from opentelemetry import trace
+from opentelemetry.propagate import inject, extract
 
-dotenv.load_dotenv()
-connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+# Configure Azure Monitor
+sys.path.append(os.path.join(os.path.dirname(__file__), 'common'))
+from azure_monitor_config import configure_azure_monitor_telemetry
+from otel_helper import OTelHelper
 
-configure_azure_monitor(
-  connection_string=connection_string
-)
+configure_azure_monitor_telemetry()
+
+# Initialize OpenTelemetry helper
+otel_helper = OTelHelper()
+
 tracer = trace.get_tracer(__name__)
 
 # Import Flask after running configure_azure_monitor()
@@ -23,23 +26,27 @@ app = Flask(__name__)
 def getOrder():
     order = request.json
     print('Order received : ' + json.dumps(order), flush=True)
-    
-    traceparent = request.headers.get('traceparent')
-    headers = {
-        'content-type': 'application/json',
-        'traceparent': traceparent
-    }
 
-    # Invoking a service
-    with tracer.start_as_current_span('order') as span:
+    # Define callback function for order processing
+    def process_order(order_data):
+        headers = {
+            'content-type': 'application/json',
+        }
+
         result = requests.post(
             url='http://%s/orders' % (os.getenv('SERVICE_RECEIPT_API_NAME')),
-            data=json.dumps(order),
+            data=json.dumps(order_data),
             headers=headers
         )
-        span.set_attribute("order.id", order.get("id", "unknown"))
+        
+        print(f"Request was sent to receipt: result = {result}", flush=True)
+        return result
 
-    print(f"Request was sent to receipt: result = {result}", flush=True)
+    otel_helper.execute_with_span(
+        callback=process_order,
+        span_attributes={'order.id': order.get('orderId', 'unknown')},
+        order_data=order
+    )
 
     return json.dumps({'success': True}), 200, {
         'ContentType': 'application/json'}
