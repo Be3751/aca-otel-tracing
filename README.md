@@ -19,6 +19,8 @@ description: Create microservices with Python that communicate reliably and secu
 
 This repository demonstrates how to build microservices that communicate and showcases how to instrument these services with OpenTelemetry and Azure Monitor Distro (AzMon Distro) for distributed tracing and observability.
 
+![](/images/aca_otel_tracing_demo.png)
+
 ## Inspiration
 
 This repository is inspired by the [Azure-Samples/svc-invoke-dapr-python](https://github.com/Azure-Samples/svc-invoke-dapr-python), which demonstrates microservice communication using Dapr. However, this implementation focuses on using OpenTelemetry to trace service-to-service communication between the following services:

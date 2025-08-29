@@ -18,10 +18,7 @@ WORKDIR /home/app
 USER nonroot
 
 # copy all the files to the container
-COPY --chown=nonroot:nonroot ./apps/order-processor .
-
-# copy common module
-COPY --chown=nonroot:nonroot ./apps/common ./common
+COPY --chown=nonroot:nonroot . /home/app/
 
 # venv
 ENV VIRTUAL_ENV=/home/app/venv
@@ -29,7 +26,6 @@ ENV VIRTUAL_ENV=/home/app/venv
 # python setup
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN export FLASK_APP=app.py
 RUN pip install -r requirements.txt
 
 # define the port number the container should expose
