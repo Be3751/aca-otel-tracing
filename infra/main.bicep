@@ -98,6 +98,7 @@ module receiptApi './app/receipt-api.bicep' = {
   scope: rg
   params: {
     name: !empty(apiContainerAppName) ? apiContainerAppName : '${abbrs.appContainerApps}${receiptApiServiceName}-${resourceToken}'
+    location: location
     containerAppsEnvironmentName: appEnv.outputs.environmentName
     containerRegistryName: appEnv.outputs.registryName
     imageName: apiImageName
@@ -149,5 +150,7 @@ output AZURE_TENANT_ID string = tenant().tenantId
 output SERVICE_CHECKOUT_WORKER_NAME string = checkoutWorker.outputs.SERVICE_WEB_NAME
 output SERVICE_ORDER_PROCESSOR_API_NAME string = orderProcessorApi.outputs.SERVICE_API_NAME
 output SERVICE_RECEIPT_API_NAME string = receiptApi.outputs.SERVICE_API_NAME
+output STORAGE_ACCOUNT_NAME string = storageAccount.outputs.name
+output STORAGE_CONTAINER_NAME string = blobContainerName
 output USE_APIM bool = useAPIM
 output PRINCIPAL_ID string = principalId

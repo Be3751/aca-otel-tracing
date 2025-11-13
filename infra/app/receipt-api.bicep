@@ -6,7 +6,6 @@ param containerAppsEnvironmentName string
 param containerRegistryName string
 param imageName string = ''
 param serviceName string = 'receipt'
-param managedIdentityName string = ''
 param storageAccountName string
 param containerName string
 param applicationInsightsConnectionString string
@@ -25,7 +24,7 @@ module app '../core/host/container-app.bicep' = {
     containerName: serviceName
     external: false
     managedIdentityEnabled: true
-    managedIdentityName: managedIdentityName
+    managedIdentityName: ''
     env: [
       {
         name: 'STORAGE_ACCOUNT_NAME'

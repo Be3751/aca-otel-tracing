@@ -11,8 +11,8 @@
       "imageName": {
         "value": "${SERVICE_RECEIPT_API_IMAGE_NAME}"
       },
-      "applicationInsightsName": {
-        "value": "${APPLICATIONINSIGHTS_NAME}"
+      "applicationInsightsConnectionString": {
+        "value": "${APPLICATIONINSIGHTS_CONNECTION_STRING}"
       },
       "containerAppsEnvironmentName": {
         "value": "${AZURE_CONTAINER_ENVIRONMENT_NAME}"
@@ -20,8 +20,11 @@
       "containerRegistryName": {
         "value": "${AZURE_CONTAINER_REGISTRY_NAME}"
       },
-      "managedIdentityName": {
-        "value": "${AZURE_MANAGED_IDENTITY_NAME}"
+      "storageAccountName": {
+        "value": "${STORAGE_ACCOUNT_NAME}"
+      },
+      "containerName": {
+        "value": "${STORAGE_CONTAINER_NAME}"
       }
     }
   }
